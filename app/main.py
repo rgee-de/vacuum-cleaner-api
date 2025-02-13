@@ -1,12 +1,23 @@
 import logging
 from fastapi import FastAPI, HTTPException
 from contextlib import asynccontextmanager
+from roborock import DeviceProp
 from app.utils.globals import roborock_info
 from app.config import LOG_LEVEL
+from app.routes import goto, clean
 
 # Configure logging for FastAPI
-logging.basicConfig(level=LOG_LEVEL, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=LOG_LEVEL, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
+
+async def execute_action(action: str, func, *args):
+    """Helper function to execute Roborock actions with standardized error handling."""
+    try:
+        result = await func(*args)
+        return {"status": "success", "message": f"{action} successfully", "data": result}
+    except Exception as e:
+        logger.error("Error in %s: %s", action, e)
+        raise HTTPException(status_code=500, detail=f"Failed to {action.lower()}")
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
@@ -21,21 +32,16 @@ async def lifespan(_: FastAPI):
         await roborock_info.disconnect_mqtt()
         logger.info("RoborockInfo disconnected on shutdown")
 
-# Initialize FastAPI with lifespan
 app = FastAPI(lifespan=lifespan)
+app.include_router(goto.router, prefix="/goto")
+app.include_router(clean.router, prefix="/clean")
 
-@app.get("/room_mappings")
-async def room_mappings():
-    """Fetch and return room mappings as JSON."""
-    try:
-        mappings = await roborock_info.get_room_mappings()
-        return {"room_mappings": mappings}
-    except Exception as e:
-        logger.error("Error in room_mappings endpoint: %s", e)
-        raise HTTPException(status_code=500, detail="Failed to retrieve room mappings")
+@app.get("/rooms")
+async def rooms():
+    """Fetch and return rooms JSON."""
+    return await execute_action("retrieve rooms", roborock_info.get_rooms)
 
-
-
-# To Cleaning Point
-# Back to Station
-# Clean Room(List with info)
+@app.get("/prop")
+async def prop() -> dict:
+    """Fetch and return device properties."""
+    return await execute_action("retrieve device properties", roborock_info.get_device_prop)
