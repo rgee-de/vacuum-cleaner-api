@@ -62,7 +62,7 @@ async def broadcast_device_props():
                     "status": "error",
                     "message": str(e)
                 })
-        await asyncio.sleep(30)
+        await asyncio.sleep(5)
 
 
 @asynccontextmanager
