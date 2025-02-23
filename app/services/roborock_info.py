@@ -1,15 +1,16 @@
 import logging
-from logging import raiseExceptions
 
-from roborock import DeviceData, RoborockCommand, Consumable, DockSummary, DeviceProp, RoborockFanPowerCode, \
-    RoborockFanSpeedS7MaxV, RoborockMopModeS7, RoborockMopIntensityS7
+from roborock import DeviceData, RoborockCommand, DeviceProp, RoborockFanSpeedS7MaxV, RoborockMopModeS7, \
+    RoborockMopIntensityS7
 from roborock.version_1_apis import RoborockMqttClientV1
 from roborock.web_api import RoborockApiClient
+
 from app.config import USERNAME, PASSWORD, LOG_LEVEL
 
 # Configure logging for RoborockInfo
 logging.basicConfig(level=LOG_LEVEL, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
 
 class RoborockInfo:
     def __init__(self):
@@ -130,11 +131,14 @@ class RoborockInfo:
             logger.error("Failed to fetch device prop: %s", e)
             raise Exception("Failed to retrieve device prop from Roborock")
 
-    async def set_clean_mode_s7maxv(self, fan_speed: RoborockFanSpeedS7MaxV = RoborockFanSpeedS7MaxV.custom, mop_mode: RoborockMopModeS7 = RoborockMopModeS7.custom, mop_intensity: RoborockMopIntensityS7 = RoborockMopIntensityS7.custom ):
+    async def set_clean_mode_s7maxv(self, fan_speed: RoborockFanSpeedS7MaxV = RoborockFanSpeedS7MaxV.custom,
+                                    mop_mode: RoborockMopModeS7 = RoborockMopModeS7.custom,
+                                    mop_intensity: RoborockMopIntensityS7 = RoborockMopIntensityS7.custom):
         """Set clean mode for S7MaxV in MQTT."""
         await self.initialize_mqtt()
         try:
-            await self.mqtt_client.send_command(RoborockCommand.SET_CLEAN_MOTOR_MODE, params=[{"fan_power": fan_speed, "mop_mode": mop_mode, "water_box_mode": mop_intensity}])
+            await self.mqtt_client.send_command(RoborockCommand.SET_CLEAN_MOTOR_MODE, params=[
+                {"fan_power": fan_speed, "mop_mode": mop_mode, "water_box_mode": mop_intensity}])
             logger.info("Set clean mode successfully")
         except Exception as e:
             logger.error("Failed to set clean mode: %s", e)
@@ -144,7 +148,8 @@ class RoborockInfo:
         """Start clean room in MQTT."""
         await self.initialize_mqtt()
         try:
-            await self.mqtt_client.send_command(RoborockCommand.APP_SEGMENT_CLEAN, params=[{"segments": segment_ids, "repeat": repeat}])
+            await self.mqtt_client.send_command(RoborockCommand.APP_SEGMENT_CLEAN,
+                                                params=[{"segments": segment_ids, "repeat": repeat}])
             logger.info("Start clean room successfully")
         except Exception as e:
             logger.error("Failed to start clean room: %s", e)
@@ -168,5 +173,20 @@ class RoborockInfo:
             logger.error("Failed to start go to: %s", e)
             raise Exception("Failed to start go to on Roborock")
 
+    async def stop(self):
+        await self.initialize_mqtt()
+        try:
+            await self.mqtt_client.send_command(RoborockCommand.APP_STOP)
+            logger.info("Stop the vacuum’s current task")
+        except Exception as e:
+            logger.error("Failed to stop current task: %s", e)
+            raise Exception("Failed to stop current task on Roborock")
 
-# params=[25000, 24850])
+    async def pause(self):
+        await self.initialize_mqtt()
+        try:
+            await self.mqtt_client.send_command(RoborockCommand.APP_PAUSE)
+            logger.info("Pause the vacuum’s current task")
+        except Exception as e:
+            logger.error("Failed to pause current task: %s", e)
+            raise Exception("Failed to pause current task on Roborock")
