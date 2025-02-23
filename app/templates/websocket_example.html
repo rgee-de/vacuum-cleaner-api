@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>WebSocket Vacuum Cleaner</title>
+    <style>
+        pre {
+            background-color: #f4f4f4;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+<div id='msg'>...waiting</div>
+<script>
+    const ws = new WebSocket("{{ websocket_url }}");
+    ws.onmessage = function (event) {
+        const message = document.getElementById('msg');
+        try {
+            const jsonObject = JSON.parse(event.data);
+            const formattedJSON = JSON.stringify(jsonObject, null, 4);
+            message.innerHTML = '<pre>' + formattedJSON + '</pre>';
+        } catch (e) {
+            message.innerHTML = 'Invalid JSON: ' + e.message;
+        }
+    };
+</script>
+</body>
+</html>

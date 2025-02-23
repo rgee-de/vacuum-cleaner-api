@@ -1,9 +1,12 @@
 from typing import List, Dict
-
 from pydantic import BaseModel
 
 
 class CleaningModeSettings(BaseModel):
+    """
+    Represents valid ranges for fan power, water box mode, and mop mode
+    for a particular cleaning mode.
+    """
     fan_power: List[int]
     water_box_mode: List[int]
     mop_mode: List[int]
@@ -33,24 +36,24 @@ CLEANING_MODES: Dict[str, CleaningModeSettings] = {
 }
 
 # fan_power:
-# - Leise / quiet: 101
-# - Normal / balanced: 102
-# - Turbo / turbo: 103
-# - Max / max: 104
-# - Aus / off: 105
-# - Individuell / custom: 106
-# - Max+ / max+: 108
-#
+# - 101: Quiet
+# - 102: Balanced
+# - 103: Turbo
+# - 104: Max
+# - 105: Off
+# - 106: Custom
+# - 108: Max+
+
 # water_box_mode:
-# - Aus / off: 200
-# - Sanft / mild: 201
-# - Standard / moderate: 202
-# - Intensiv / intense: 203
-# - Individuell / custom: 204
-#
+# - 200: Off
+# - 201: Mild
+# - 202: Moderate
+# - 203: Intense
+# - 204: Custom
+
 # mop_mode:
-# - Standard / standard: 300
-# - Gründlich / deep: 301
-# - Individuell / custom: 302
-# - Gründlich+ / deep_plus: 303
-# - Schnell / fast: 304
+# - 300: Standard
+# - 301: Deep
+# - 302: Custom
+# - 303: Deep+
+# - 304: Fast

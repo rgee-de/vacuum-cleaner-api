@@ -1,9 +1,11 @@
 from pydantic import BaseModel
-
 from app.models.cleaning_mode_settings import CLEANING_MODES
 
 
 class CleaningSettings(BaseModel):
+    """
+    Represents cleaning settings that can be set without starting cleaning.
+    """
     mode: str
     fan_power: int
     water_box_mode: int
@@ -11,7 +13,9 @@ class CleaningSettings(BaseModel):
 
     @classmethod
     def validate_settings(cls, mode: str, fan_power: int, water_box_mode: int, mop_mode: int):
-        """Validate the selected settings against the mode's allowed values."""
+        """
+        Validate the selected settings against the allowed values for the given mode.
+        """
         if mode not in CLEANING_MODES:
             raise ValueError("Invalid cleaning mode selected.")
 
