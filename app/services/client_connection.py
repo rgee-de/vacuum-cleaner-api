@@ -120,7 +120,7 @@ class ClientConnection:
         rooms = self.home_data.rooms
         try:
             room_mapping = await self.local_client.get_room_mapping()
-        except Exception as e:
+        except Exception:
             logger.exception("Failed to fetch room mapping.")
             raise
 
