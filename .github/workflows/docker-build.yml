@@ -1,4 +1,4 @@
-name: Build and Push ARMv7 Docker Image (FastAPI)
+name: Build and Push ARM64 Docker Image (FastAPI)
 
 on:
   push:
@@ -26,11 +26,10 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and push Docker image for ARMv7
+      - name: Build and push Docker image (ARM64)
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./Dockerfile
           push: true
-          platforms: linux/arm/v7
-          tags: rgee/vacuum-cleaner-api:arm7-latest
+          platforms: linux/arm64
+          tags: rgee/vacuum-cleaner-api:arm64-latest
