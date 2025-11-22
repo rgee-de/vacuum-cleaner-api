@@ -1,5 +1,5 @@
 services:
-  vacuum-api:
+  vacuum-cleaner-api:
     image: rgee/vacuum-cleaner-api:arm64-latest
     container_name: vacuum-cleaner-api
     restart: unless-stopped
