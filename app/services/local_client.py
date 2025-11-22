@@ -8,22 +8,24 @@ from roborock.version_1_apis.roborock_client_v1 import RT
 logger = logging.getLogger(__name__)
 
 
+class RoborockError(Exception):
+    """Custom exception for Roborock client failures."""
+    pass
+
+
 class RoboLocalClient(RoborockLocalClientV1):
     def on_connection_lost(self, exc: Exception | None) -> None:
         super().on_connection_lost(exc)
         self.validate_connection()
         logger.warning("Local connection lost: %s", exc)
 
-
     async def get_room_mapping(self) -> list[RoomMapping] | None:
         await self.check_connected()
         return await super().get_room_mapping()
 
-
     async def get_prop(self) -> DeviceProp:
         await self.check_connected()
         return await super().get_prop()
-
 
     async def send_command_custom(
             self,
@@ -33,7 +35,6 @@ class RoboLocalClient(RoborockLocalClientV1):
     ) -> RT:
         await self.check_connected()
         return await self.send_command(method, params, return_type)
-
 
     async def set_clean_mode_s7maxv(
             self,
@@ -54,11 +55,9 @@ class RoboLocalClient(RoborockLocalClientV1):
             logger.info("Clean mode set successfully.")
         except Exception as e:
             logger.error("Failed to set clean mode: %s", e)
-            raise Exception("Failed to set clean mode on Roborock")
-
+            raise RoborockError("Failed to set clean mode on Roborock") from e
 
     async def check_connected(self):
         if not self.is_connected():
             logger.warning("Local client is not connected")
             await self.validate_connection()
-            # raise Exception("Local client is not connected")

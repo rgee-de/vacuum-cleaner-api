@@ -20,26 +20,25 @@ class ClientConnection:
         self.user_data: UserData = None
         self.home_data: HomeData = None
         self.device: HomeDataDevice = None
-        self.product_info: dict[str, HomeDataProduct] = None
+        self.product_info: dict[str, HomeDataProduct] | None = None
         self.device_data: DeviceData = None
         self.mqtt_client: RoborockMqttClientV1 = None
         self.network_info: NetworkInfo = None
         self.local_client: RoboLocalClient = None
-
+        self._local_connect_task: asyncio.Task | None = None
 
     async def initialize(self) -> None:
         logger.info("Starting Roborock connection initialization.")
         try:
             await self._authenticate()
             await self._fetch_device_data()
-            await self._connect_mqtt_client()
+            self._connect_mqtt_client()
             await self._fetch_network_info()
             self._create_local_client()
             logger.info("Roborock connection initialized.")
         except Exception as e:
             logger.error("Roborock connection initialization failed: %s", e)
             raise
-
 
     async def _authenticate(self) -> None:
         try:
@@ -48,7 +47,6 @@ class ClientConnection:
         except Exception:
             logger.exception("Authentication failed.")
             raise
-
 
     async def _fetch_device_data(self) -> None:
         try:
@@ -74,15 +72,13 @@ class ClientConnection:
             logger.exception("Failed to fetch device data: %s", e)
             raise
 
-
-    async def _connect_mqtt_client(self) -> None:
+    def _connect_mqtt_client(self) -> None:
         try:
             self.mqtt_client = RoborockMqttClientV1(self.user_data, self.device_data)
             logger.info("MQTT client connected")
         except Exception as e:
             logger.exception("Failed to to connect MQTT client: %s", e)
             raise
-
 
     async def _fetch_network_info(self) -> None:
         try:
@@ -92,7 +88,6 @@ class ClientConnection:
             logger.exception("Failed to to fetch network info: %s", e)
             raise
 
-
     def _create_local_client(self) -> None:
         try:
             local_device_data = DeviceData(self.device, self.product_info[self.device.product_id].model,
@@ -101,17 +96,15 @@ class ClientConnection:
             self.local_client = RoboLocalClient(local_device_data)
             logger.info("Local client created")
 
-            asyncio.create_task(self._connect_local())
+            self._local_connect_task = asyncio.create_task(self._connect_local())
 
         except Exception as e:
             logger.exception("Failed to create local client: %s", e)
             raise
 
-
     async def _connect_local(self):
         await self.local_client.async_connect()
         logger.info("Local client connected → %r", self.local_client.is_connected())
-
 
     async def get_rooms(self) -> list[RoomSummary]:
         if not self.home_data or not self.home_data.rooms:

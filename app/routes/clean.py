@@ -28,7 +28,8 @@ async def set_cleaning_settings(cleaning_settings: CleaningSettings):
 @router.post("/segments")
 async def start_cleaning(request: SegmentRequest):
     try:
-        await globals.cc.local_client.send_command_custom(RoborockCommand.APP_SEGMENT_CLEAN, params=[{"segments": request.segment_ids, "repeat": request.repeat}])
+        await globals.cc.local_client.send_command_custom(RoborockCommand.APP_SEGMENT_CLEAN, params=[
+            {"segments": request.segment_ids, "repeat": request.repeat}])
         logger.info("Start cleaning: %s", request)
     except Exception as e:
         logger.error("Failed to start cleaning: %s", e)
