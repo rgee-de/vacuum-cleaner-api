@@ -1,0 +1,15 @@
+services:
+  vacuum-api:
+    image: rgee/vacuum-cleaner-api:arm64-latest
+    container_name: vacuum-cleaner-api
+    restart: unless-stopped
+    ports:
+      - "8001:8000"
+    environment:
+      ROBOROCK_USER: ${ROBOROCK_USER}
+      ROBOROCK_PASSWORD: ${ROBOROCK_PASSWORD}
+      LOG_LEVEL: ${LOG_LEVEL}
+      ORIGINS: ${ORIGINS}
+      WEBSOCKET_URL: ${WEBSOCKET_URL}
+      CLEANING_X: ${CLEANING_X}
+      CLEANING_Y: ${CLEANING_Y}
