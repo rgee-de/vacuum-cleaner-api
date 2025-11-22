@@ -3,6 +3,7 @@ services:
     image: rgee/vacuum-cleaner-api:arm64-latest
     container_name: vacuum-cleaner-api
     restart: unless-stopped
+    pull_policy: always
     ports:
       - "8001:8000"
     environment:
