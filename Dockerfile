@@ -1,25 +1,35 @@
 FROM python:3.11-slim
 
+# Install OS dependencies + create non-root user in ONE RUN instruction
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        git \
+        libfreetype6 \
+        libjpeg62-turbo \
+        libssl-dev \
+        zlib1g && \
+    useradd -m appuser && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Switch to non-root user
+USER appuser
+
+# Set the working directory
 WORKDIR /app
 
-# Update and install runtime libraries (minimal & fast)
-RUN apt-get update && apt-get install -y \
-    libfreetype6 \
-    libjpeg62-turbo \
-    libssl-dev \
-    zlib1g \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+# Copy requirements file
+COPY requirements.txt .
 
-# Copy requirements
-COPY requirements.txt requirements.txt
+# Install Python dependencies (as non-root via --user)
+RUN pip install --no-cache-dir --user --upgrade pip setuptools wheel \
+    && pip install --no-cache-dir --user -r requirements.txt
 
-# Install python deps (fast because ARM64 wheels exist)
-RUN pip install --no-cache-dir --upgrade pip setuptools wheel \
-    && pip install --no-cache-dir -r requirements.txt
+# Ensure Python can find user bin
+ENV PATH="/home/appuser/.local/bin:${PATH}"
 
-# Copy the rest of the application
-COPY . .
+# Copy the actual application
+COPY app/ ./app/
 
 EXPOSE 8000
 
